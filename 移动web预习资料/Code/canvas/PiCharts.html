@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>用canvas实现饼图</title>
+  <style>
+    canvas {
+      border: 1px solid red;
+    }
+  </style>
+</head>
+
+<body>
+  <canvas width="600" height="400">您的浏览器不支持canvas,请升级浏览器</canvas>
+
+  <script>
+    var canvas = document.querySelector("canvas");
+    // 1.准备数据
+    var data = [
+      {
+        title: '15-20岁',
+        num: 12
+      },
+      {
+        title: '20-25岁',
+        num: 30
+      },
+      {
+        title: '25-30岁',
+        num: 22
+      },
+      {
+        title: '30-35岁',
+        num: 10
+      },
+      {
+        title: '35-100岁',
+        num: 12
+      },
+    ];
+    // 2.创建构造函数
+    var PiCharts = function () {
+      // 2.1 画笔
+      this.context = canvas.getContext("2d");
+      // 2.2 画布宽高
+      this.canvasWidth = canvas.width;
+      this.canvasHeight = canvas.height;
+      // 2.3 圆心位置
+      this.zeroX = this.canvasWidth / 2 + 60;
+      this.zeroY = this.canvasHeight / 2;
+      // 2.4 矩形宽高
+      this.rectW = 30;
+      this.rectH = 16;
+      // 2.5 延伸线的长度
+      this.outLine = 20;
+      // 2.6 定义饼图半径
+      this.radius = 150;
+      // 2.7 间隙
+      this.space = 20;
+    }
+    // 3.创建随机数方法--当你写了一个功能或函数 你务必要知道你最终要的是什么
+    // 还要知道如何去测试
+    // 如果你不知道你要的什么 还不知道怎么取测 那么就别写了
+    PiCharts.prototype.getRandomColor = function () {
+      var r = Math.floor(Math.random() * 256);
+      var g = Math.floor(Math.random() * 256);
+      var b = Math.floor(Math.random() * 256);
+
+      return 'rgb(' + r + ',' + g + ',' + b + ')'; //rgb(233,22,12)数字每次都不一样
+    }
+    // 测试
+    // console.log(new PiCharts().getRandomColor());
+    // 4.创建转换方法
+    PiCharts.prototype.transformAngle = function (data) {
+      // 4.1 求和
+      var sum = 0;
+      data.forEach(function (item, i) {
+        sum += item.num;
+      })
+      // 4.2 新创建一个数组
+      var transformData = [];
+      // 4.3 遍历原数组
+      data.forEach(function (item, i) {
+        // 4.4 把转换后的数据添加到新数组中
+        transformData.push({
+          title: item.title,
+          num: item.num,
+          angle: item.num / sum * 2 * Math.PI
+        })
+      })
+
+      // 4.5 返回新数组
+      return transformData;
+    }
+    // 测试
+    // console.log(new PiCharts().transformAngle(data));
+    // 5.画饼图
+    PiCharts.prototype.drawPi = function (data) {
+      // 5.1 转换数据
+      var resultData = this.transformAngle(data);
+      // 5.2 缓存this
+      var _this = this;
+      // console.log(resultData);
+      // 5.3 遍历转换后的数据
+      // 5.4 定义起始角度
+      var startAngle = 0;
+      resultData.forEach(function (item, i) {
+        console.log(item);
+        // 5.5 把每一部分画到canvas上
+        _this.context.beginPath();
+        _this.context.moveTo(_this.zeroX, _this.zeroY);
+        _this.context.arc(_this.zeroX, _this.zeroY, _this.radius, startAngle, startAngle + item.angle);
+        _this.context.closePath();
+        var color = _this.context.fillStyle = _this.getRandomColor();
+        _this.context.fill();
+
+
+        // 引用drawLengend绘制小方块
+        _this.drawLegend(color, i, item.title);
+        // 引用drawLine绘制延伸标注
+        _this.drawLine(color,item.title,startAngle,item.angle);
+        // 变startAngle
+        startAngle = startAngle + item.angle;
+      })
+
+    }
+
+    // 6.画图例
+    PiCharts.prototype.drawLegend = function (color, index, title) {
+      // 画长方形
+      // this.context.beginPath();
+      this.context.fillStyle = color;
+      this.context.fillRect(this.space, this.space + index * (this.rectH + 10), this.rectW, this.rectH);
+      // 画文字
+      this.context.beginPath();
+      this.context.fillStyle = color;
+      this.context.textAlign = 'left';
+      this.context.textBaseline = 'top';
+      this.context.fillText(title, this.space + this.rectW + 10, this.space + index * (this.rectH + 10));
+
+    }
+
+
+    // 7.画延伸标注
+    PiCharts.prototype.drawLine = function(color,title,startAngle,angle){
+      // 7.1 找到拐点的坐标
+      // 7.1.1 斜边的长度
+      var edge = this.radius + this.outLine;
+      // 7.1.2 角度(startAngle+angle/2)  拐点x和y
+      outX = this.zeroX + Math.cos(startAngle + angle/2)*edge;
+      outY = this.zeroY + Math.sin(startAngle + angle/2)*edge;
+      var width = this.context.measureText(title).width;
+      this.context.beginPath();
+      this.context.moveTo(this.zeroX,this.zeroY);
+      this.context.lineTo(outX,outY);
+      if(outX > this.zeroX) {
+        this.context.lineTo(outX+width,outY);
+        this.context.textAlign = "left";
+        
+      }else {
+        this.context.lineTo(outX-width,outY);
+        this.context.textAlign = "right";
+      }
+      this.context.textBaseline ="bottom";
+      this.context.fillText(title,outX,outY);
+      this.context.strokeStyle = color;
+      this.context.stroke();
+    }
+
+    // 测试
+    new PiCharts().drawPi(data)
+  </script>
+</body>
+
+</html>

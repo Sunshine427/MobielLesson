@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="X-UA-Compatible" content="ie=edge">
+	<title>%单位的相对性</title>
+	<style>
+		.outer {
+			margin:  100px auto;
+			width: 500px;
+			height: 400px;
+			background-color: hotpink;
+		}
+
+		.inner {
+			/* width: 50% -> 250px */
+			width: 50%;
+			/* height: 50% -> 200px */
+			height: 50%;
+			background-color: orange;
+			/* margin-left: 10%; ->50px 相对的时父元素的宽度 */
+			margin-left: 10%;
+			/* 	padding-top: 10%; -> 50px 相对的时父元素的宽度 */
+			/* padding-top: 10%;
+			padding-bottom: 10%;
+			padding-right: 10%;
+			padding-left: 10%; */
+
+			/* border没有这样的写法 */
+			/* border: 10% solid #ccc; */
+		}
+	</style>
+
+</head>
+<body>
+	<div class="outer">
+		<div class="inner"></div>
+	</div>
+</body>
+</html>
